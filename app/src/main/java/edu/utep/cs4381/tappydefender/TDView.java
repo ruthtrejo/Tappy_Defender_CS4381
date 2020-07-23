@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -66,25 +67,42 @@ public class TDView extends SurfaceView
     // For storing our important information
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
-    // Flag that tells if game is paused
-    private boolean pause = false;
+
+    // Variables used when the game is paused
+    private boolean isInPause = false; //flag true if paused, false otherwise
+    private Rect pauseButton; //pause button drawing
+    private Paint paintPauseBtn;
+
+    private Rect resumeBtn;
+    private Paint paintResumeBtn;
 
     public TDView(Context ctx, int x, int y) {
         super(ctx);
-        this.context = ctx;
-        this.x       = x;
-        this.y       = y;
+        this.context   = ctx;
+        this.x         = x;
+        this.y         = y;
         // Get our holder from our view supplied
-        holder       = getHolder();
-        paint        = new Paint();
-        dustPaint    = new Paint();
+        holder         = getHolder();
+        paint          = new Paint();
+        dustPaint      = new Paint();
         dustPaint.setColor(Color.WHITE);
-        textPaint    = new Paint();
-        powerUpPaint = new Paint();
-        soundEffect  = new SoundEffect(context);
-        preferences  = context.getSharedPreferences("HiScores", Context.MODE_PRIVATE);
-        editor       = preferences.edit();
-        fastestTime  = preferences.getLong("fastestTime", 1000000);
+        textPaint      = new Paint();
+        powerUpPaint   = new Paint();
+        soundEffect    = new SoundEffect(context);
+        preferences    = context.getSharedPreferences("HiScores", Context.MODE_PRIVATE);
+        editor         = preferences.edit();
+        fastestTime    = preferences.getLong("fastestTime", 1000000);
+        pauseButton    = new Rect(50, 50, 200,200);
+        paintPauseBtn  = new Paint();
+        paintPauseBtn.setStrokeWidth(5);
+        paintPauseBtn.setColor(Color.WHITE);
+        paintPauseBtn.setStyle(Paint.Style.FILL);
+
+        resumeBtn      = new Rect(20, 20, 100, 100);
+        paintResumeBtn = new Paint();
+        paintResumeBtn.setStrokeWidth(5);
+        paintPauseBtn.setColor(Color.BLUE);
+        paintPauseBtn.setStyle(Paint.Style.FILL);
         startGame(ctx, x, y);
     }
 
@@ -110,13 +128,6 @@ public class TDView extends SurfaceView
         timeStarted = System.currentTimeMillis();
         // Flag that game is no longer ended
         gameEnded = false;
-    }
-
-    /* Method to pause game */
-    public void pauseGame(View view){
-        if(!pause){
-            pause = true;
-        }
     }
 
     // Time in milliseconds
@@ -221,6 +232,13 @@ public class TDView extends SurfaceView
                 canvas.drawCircle(dust.getX(), dust.getY(), dust.getRadius(),dustPaint);
             }
 
+            //Draw a pause button on the screen
+            canvas.drawRect(pauseButton, paintPauseBtn);
+
+            //If its in pause, draw a new rectangle that resumes the game
+            if(isInPause){
+                canvas.drawRect(resumeBtn, paintResumeBtn);
+            }
             // Self explanitory, debug hitboxes so we can see them.
             //Paint debugPaint = new Paint();
             //debugPaint.setColor(Color.WHITE);
@@ -277,7 +295,6 @@ public class TDView extends SurfaceView
             //Draw power up?
             canvas.drawBitmap(powerUp.getBitmap(), powerUp.getX(), powerUp.getY(), powerUpPaint);
 
-
             holder.unlockCanvasAndPost(canvas);
         }
     }
@@ -294,12 +311,22 @@ public class TDView extends SurfaceView
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        int touchX = (int) motionEvent.getX();
+        int touchY = (int) motionEvent.getY();
         switch (motionEvent.getActionMasked()) {
             // Simple controls for our player. Goes up and speeds up when pressed down.
             case MotionEvent.ACTION_DOWN:
                 player.setBoosting(true);
                 if (gameEnded) {
                     startGame(context, x, y);
+                }
+                if(pauseButton.contains(touchX, touchY)){
+                    isInPause = true;
+                    pause();
+                }
+                if(resumeBtn.contains(touchX, touchY)){
+                    isInPause = false;
+                    resume();
                 }
                 break;
             case MotionEvent.ACTION_UP:

@@ -22,6 +22,5 @@ public class MainActivity extends AppCompatActivity {
             finish(); //destroys MainActivity
         });
 
-
     }
 }

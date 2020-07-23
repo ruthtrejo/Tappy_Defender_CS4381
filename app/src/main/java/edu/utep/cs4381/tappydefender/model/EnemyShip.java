@@ -16,6 +16,26 @@ public class EnemyShip extends Ship{
 
     public EnemyShip(Context ctx, int screenX, int screenY, Bitmap bitmap){
         super(ctx, screenX, screenY, bitmap);
+        Random generator = new Random();
+        int whichBitmap = generator.nextInt(3);
+        switch (whichBitmap){
+            case 0:
+                bitmap = BitmapFactory.decodeResource
+                        (ctx.getResources(), R.drawable.enemy3);
+                break;
+
+            case 1:
+                bitmap = BitmapFactory.decodeResource
+                        (ctx.getResources(), R.drawable.enemy2);
+                break;
+
+            case 2:
+                bitmap = BitmapFactory.decodeResource
+                        (ctx.getResources(), R.drawable.enemy);
+                break;
+        }
+
+        scaleBitmap(screenX);
         maxX = screenX;
         maxY = screenY;
         minX = 0;
@@ -39,6 +59,22 @@ public class EnemyShip extends Ship{
         speed = random.nextInt(10)+10;
         x = maxX;
         y = random.nextInt(maxY) - bitmap.getHeight();
+    }
+
+    /* Enemy ships are scaled down on lower resolution screens */
+    public void scaleBitmap(int x){
+
+        if(x < 1000) {
+            bitmap = Bitmap.createScaledBitmap(bitmap,
+                    bitmap.getWidth() / 3,
+                    bitmap.getHeight() / 3,
+                    false);
+        }else if(x < 1200){
+            bitmap = Bitmap.createScaledBitmap(bitmap,
+                    bitmap.getWidth() / 2,
+                    bitmap.getHeight() / 2,
+                    false);
+        }
     }
 
 }
