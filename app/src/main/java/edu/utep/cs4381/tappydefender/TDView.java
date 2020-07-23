@@ -235,7 +235,7 @@ public class TDView extends SurfaceView
             //Draw a pause button on the screen
             canvas.drawRect(pauseButton, paintPauseBtn);
 
-            //If its in pause, draw a new rectangle that resumes the game
+            //If game is in pause, draw a new rectangle that resumes the game
             if(isInPause){
                 canvas.drawRect(resumeBtn, paintResumeBtn);
             }
@@ -317,13 +317,16 @@ public class TDView extends SurfaceView
             // Simple controls for our player. Goes up and speeds up when pressed down.
             case MotionEvent.ACTION_DOWN:
                 player.setBoosting(true);
+                /* If game ended, startGame if user presses to start game*/
                 if (gameEnded) {
                     startGame(context, x, y);
                 }
+                /* If the pause button is pressed, call pause() */
                 if(pauseButton.contains(touchX, touchY)){
                     isInPause = true;
                     pause();
                 }
+                /* If the resume button is pressed, call resume() */
                 if(resumeBtn.contains(touchX, touchY)){
                     isInPause = false;
                     resume();
