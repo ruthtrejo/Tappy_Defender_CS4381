@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -73,9 +74,6 @@ public class TDView extends SurfaceView
     private Rect pauseButton; //pause button drawing
     private Paint paintPauseBtn;
 
-    private Rect resumeBtn;
-    private Paint paintResumeBtn;
-
     public TDView(Context ctx, int x, int y) {
         super(ctx);
         this.context   = ctx;
@@ -92,17 +90,15 @@ public class TDView extends SurfaceView
         preferences    = context.getSharedPreferences("HiScores", Context.MODE_PRIVATE);
         editor         = preferences.edit();
         fastestTime    = preferences.getLong("fastestTime", 1000000);
-        pauseButton    = new Rect(50, 50, 200,200);
+
+        //Pause Button Information
+        pauseButton    = new Rect(50, 70, 300,200);
         paintPauseBtn  = new Paint();
         paintPauseBtn.setStrokeWidth(5);
         paintPauseBtn.setColor(Color.WHITE);
         paintPauseBtn.setStyle(Paint.Style.FILL);
+        paintPauseBtn.setTextAlign(Paint.Align.RIGHT);
 
-        resumeBtn      = new Rect(20, 20, 100, 100);
-        paintResumeBtn = new Paint();
-        paintResumeBtn.setStrokeWidth(5);
-        paintPauseBtn.setColor(Color.BLUE);
-        paintPauseBtn.setStyle(Paint.Style.FILL);
         startGame(ctx, x, y);
     }
 
@@ -232,13 +228,12 @@ public class TDView extends SurfaceView
                 canvas.drawCircle(dust.getX(), dust.getY(), dust.getRadius(),dustPaint);
             }
 
-            //Draw a pause button on the screen
+            //Draw a PAUSE button on the screen
             canvas.drawRect(pauseButton, paintPauseBtn);
+            textPaint.setColor(Color.BLACK);
+            textPaint.setStrokeWidth(4);
+            canvas.drawText("PAUSE",245,150,textPaint);
 
-            //If game is in pause, draw a new rectangle that resumes the game
-            if(isInPause){
-                canvas.drawRect(resumeBtn, paintResumeBtn);
-            }
             // Self explanitory, debug hitboxes so we can see them.
             //Paint debugPaint = new Paint();
             //debugPaint.setColor(Color.WHITE);
@@ -256,11 +251,14 @@ public class TDView extends SurfaceView
                 textPaint.setTextSize(48);
                 textPaint.setTextAlign(Paint.Align.LEFT);
                 canvas.drawText(formatTime("Fastest", fastestTime), 10, yy, textPaint);
-                canvas.drawText("Shield: " + player.getShieldStrength(), 10, getHeight() - yy,
+                canvas.drawText("Shield: " + player.getShieldStrength(),
+                        10, getHeight() - yy,
                         textPaint);
                 textPaint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText(formatTime("Time", timeTaken), getWidth()/(float)2, yy, textPaint);
-                canvas.drawText("Distance: " + distanceRemaining/(float)1000 + " KM", getWidth()/(float)2,
+                canvas.drawText(formatTime("Time", timeTaken),
+                        getWidth()/(float)2, yy, textPaint);
+                canvas.drawText("Distance: " + distanceRemaining/(float)1000
+                                + " KM", getWidth()/(float)2,
                         getHeight() - yy, textPaint);
                 textPaint.setTextAlign(Paint.Align.RIGHT);
                 canvas.drawText("Speed " + player.getSpeed() * 60 + "MPS", getWidth() - 10,
@@ -273,8 +271,8 @@ public class TDView extends SurfaceView
                 canvas.drawText("Game Over!", getWidth()/(float)2, yy + 20, textPaint);
                 // Fastest ....
                 textPaint.setTextSize(48);
-                canvas.drawText(formatTime("Fastest Time", fastestTime), getWidth()/(float)2,
-                        yy + 90, textPaint);
+                canvas.drawText(formatTime("Fastest Time", fastestTime),
+                        getWidth()/(float)2, yy + 90, textPaint);
                 // Time....
                 canvas.drawText(formatTime("Time taken", timeTaken), getWidth()/(float)2,
                         yy + 90 + 48, textPaint);
@@ -303,7 +301,7 @@ public class TDView extends SurfaceView
         try {
             // This slows down our CPU so that we can catch frames and changes.
             // tempo of the game, can increase or decrease.
-            gameThread.sleep(17); // in milliseconds
+            gameThread.sleep(1); // in milliseconds
         } catch (InterruptedException e) {
         }
 
@@ -326,12 +324,7 @@ public class TDView extends SurfaceView
                     isInPause = true;
                     pause();
                 }
-                /* If the resume button is pressed, call resume() */
-                if(resumeBtn.contains(touchX, touchY)){
-                    isInPause = false;
-                    resume();
-                }
-                break;
+
             case MotionEvent.ACTION_UP:
                 player.setBoosting(false);
                 break;
