@@ -69,35 +69,36 @@ public class TDView extends SurfaceView
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
 
-    // Variables used when the game is paused
-    private boolean isInPause = false; //flag true if paused, false otherwise
-    private Rect pauseButton; //pause button drawing
+    private Rect pauseBtn;
     private Paint paintPauseBtn;
+    private boolean isInPause;
 
     public TDView(Context ctx, int x, int y) {
         super(ctx);
-        this.context   = ctx;
-        this.x         = x;
-        this.y         = y;
+        this.context  = ctx;
+        this.x        = x;
+        this.y        = y;
         // Get our holder from our view supplied
-        holder         = getHolder();
-        paint          = new Paint();
-        dustPaint      = new Paint();
+        holder        = getHolder();
+        paint         = new Paint();
+        dustPaint     = new Paint();
         dustPaint.setColor(Color.WHITE);
-        textPaint      = new Paint();
-        powerUpPaint   = new Paint();
-        soundEffect    = new SoundEffect(context);
-        preferences    = context.getSharedPreferences("HiScores", Context.MODE_PRIVATE);
-        editor         = preferences.edit();
-        fastestTime    = preferences.getLong("fastestTime", 1000000);
+        textPaint     = new Paint();
+        powerUpPaint  = new Paint();
+        soundEffect   = new SoundEffect(context);
+        preferences   = context.getSharedPreferences("HiScores", Context.MODE_PRIVATE);
+        editor        = preferences.edit();
+        fastestTime   = preferences.getLong("fastestTime", 1000000);
 
-        //Pause Button Information
-        pauseButton    = new Rect(50, 70, 300,200);
-        paintPauseBtn  = new Paint();
+        // Initialize the pause button
+        pauseBtn      = new Rect(50,70,300,200);
+        paintPauseBtn = new Paint();
         paintPauseBtn.setStrokeWidth(5);
         paintPauseBtn.setColor(Color.WHITE);
         paintPauseBtn.setStyle(Paint.Style.FILL);
         paintPauseBtn.setTextAlign(Paint.Align.RIGHT);
+
+        isInPause = false;
 
         startGame(ctx, x, y);
     }
@@ -228,11 +229,8 @@ public class TDView extends SurfaceView
                 canvas.drawCircle(dust.getX(), dust.getY(), dust.getRadius(),dustPaint);
             }
 
-            //Draw a PAUSE button on the screen
-            canvas.drawRect(pauseButton, paintPauseBtn);
-            textPaint.setColor(Color.BLACK);
-            textPaint.setStrokeWidth(4);
-            canvas.drawText("PAUSE",245,150,textPaint);
+            //drawButton
+            canvas.drawRect(pauseBtn, paintPauseBtn);
 
             // Self explanitory, debug hitboxes so we can see them.
             //Paint debugPaint = new Paint();
@@ -251,14 +249,11 @@ public class TDView extends SurfaceView
                 textPaint.setTextSize(48);
                 textPaint.setTextAlign(Paint.Align.LEFT);
                 canvas.drawText(formatTime("Fastest", fastestTime), 10, yy, textPaint);
-                canvas.drawText("Shield: " + player.getShieldStrength(),
-                        10, getHeight() - yy,
+                canvas.drawText("Shield: " + player.getShieldStrength(), 10, getHeight() - yy,
                         textPaint);
                 textPaint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText(formatTime("Time", timeTaken),
-                        getWidth()/(float)2, yy, textPaint);
-                canvas.drawText("Distance: " + distanceRemaining/(float)1000
-                                + " KM", getWidth()/(float)2,
+                canvas.drawText(formatTime("Time", timeTaken), getWidth()/(float)2, yy, textPaint);
+                canvas.drawText("Distance: " + distanceRemaining/(float)1000 + " KM", getWidth()/(float)2,
                         getHeight() - yy, textPaint);
                 textPaint.setTextAlign(Paint.Align.RIGHT);
                 canvas.drawText("Speed " + player.getSpeed() * 60 + "MPS", getWidth() - 10,
@@ -271,8 +266,8 @@ public class TDView extends SurfaceView
                 canvas.drawText("Game Over!", getWidth()/(float)2, yy + 20, textPaint);
                 // Fastest ....
                 textPaint.setTextSize(48);
-                canvas.drawText(formatTime("Fastest Time", fastestTime),
-                        getWidth()/(float)2, yy + 90, textPaint);
+                canvas.drawText(formatTime("Fastest Time", fastestTime), getWidth()/(float)2,
+                        yy + 90, textPaint);
                 // Time....
                 canvas.drawText(formatTime("Time taken", timeTaken), getWidth()/(float)2,
                         yy + 90 + 48, textPaint);
@@ -293,6 +288,7 @@ public class TDView extends SurfaceView
             //Draw power up?
             canvas.drawBitmap(powerUp.getBitmap(), powerUp.getX(), powerUp.getY(), powerUpPaint);
 
+
             holder.unlockCanvasAndPost(canvas);
         }
     }
@@ -301,7 +297,7 @@ public class TDView extends SurfaceView
         try {
             // This slows down our CPU so that we can catch frames and changes.
             // tempo of the game, can increase or decrease.
-            gameThread.sleep(1); // in milliseconds
+            gameThread.sleep(5); // in milliseconds
         } catch (InterruptedException e) {
         }
 
@@ -311,20 +307,27 @@ public class TDView extends SurfaceView
     public boolean onTouchEvent(MotionEvent motionEvent) {
         int touchX = (int) motionEvent.getX();
         int touchY = (int) motionEvent.getY();
+
         switch (motionEvent.getActionMasked()) {
             // Simple controls for our player. Goes up and speeds up when pressed down.
             case MotionEvent.ACTION_DOWN:
                 player.setBoosting(true);
-                /* If game ended, startGame if user presses to start game*/
                 if (gameEnded) {
                     startGame(context, x, y);
                 }
-                /* If the pause button is pressed, call pause() */
-                if(pauseButton.contains(touchX, touchY)){
-                    isInPause = true;
+
+                if(pauseBtn.contains(touchX, touchY) && playing){
+                    //isInPause = true;
                     pause();
+                    System.out.println("Playing: "+playing);
                 }
 
+                else if(pauseBtn.contains(touchX, touchY) && !playing){
+                    resume();
+                    System.out.println("Playing: "+playing);
+                }
+
+                break;
             case MotionEvent.ACTION_UP:
                 player.setBoosting(false);
                 break;
