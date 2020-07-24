@@ -3,8 +3,14 @@ package edu.utep.cs4381.tappydefender.model;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.Handler;
+
+import androidx.constraintlayout.solver.widgets.Helper;
+
 
 public class PowerUp extends GameObject{
+
+    private final Handler HANDLER = new Handler();
     private int maxX, minX; // move horizontally from right to left
     private int maxY, minY;
 
@@ -19,6 +25,7 @@ public class PowerUp extends GameObject{
         minY = 0;
         this.bitmap = bitmap;
         hitbox = new Rect(x, y, bitmap.getWidth(), bitmap.getHeight());
+
         displayNewPowerUp();
     }
 

@@ -71,7 +71,7 @@ public class TDView extends SurfaceView
 
     private Rect pauseBtn;
     private Paint paintPauseBtn;
-    private boolean isInPause;
+    private Paint pauseText;
 
     public TDView(Context ctx, int x, int y) {
         super(ctx);
@@ -97,8 +97,7 @@ public class TDView extends SurfaceView
         paintPauseBtn.setColor(Color.WHITE);
         paintPauseBtn.setStyle(Paint.Style.FILL);
         paintPauseBtn.setTextAlign(Paint.Align.RIGHT);
-
-        isInPause = false;
+        pauseText     = new Paint();
 
         startGame(ctx, x, y);
     }
@@ -229,8 +228,13 @@ public class TDView extends SurfaceView
                 canvas.drawCircle(dust.getX(), dust.getY(), dust.getRadius(),dustPaint);
             }
 
-            //drawButton
+            //Draw a PAUSE/RESUME button on the screen
             canvas.drawRect(pauseBtn, paintPauseBtn);
+            pauseText.setColor(Color.BLACK);
+            pauseText.setStrokeWidth(4);
+            pauseText.setTextSize(80);
+            canvas.drawText("||",150,150,pauseText);
+
 
             // Self explanitory, debug hitboxes so we can see them.
             //Paint debugPaint = new Paint();
